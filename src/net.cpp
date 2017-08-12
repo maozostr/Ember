@@ -23,6 +23,7 @@
 
 // Dump addresses to peers.dat every 15 minutes (900s)
 #define DUMP_ADDRESSES_INTERVAL 900
+#define BUF_SIZE 8192
 
 using namespace std;
 using namespace boost;
@@ -86,8 +87,7 @@ unsigned short GetListenPort()
 }
 
 // find 'best' local address for a particular peer
-bool GetLocal(CService& addr, const CNetAddr *paddrPeer)
-{
+bool GetLocal(CService& addr, const CNetAddr *paddrPeer) {
     if (fNoListen)
         return false;
 
@@ -127,56 +127,6 @@ CAddress GetLocalAddress(const CNetAddr *paddrPeer)
     return ret;
 }
 
-bool RecvLine(SOCKET hSocket, string& strLine)
-{
-    strLine = "";
-    while (true)
-    {
-        char c;
-        int nBytes = recv(hSocket, &c, 1, 0);
-        if (nBytes > 0)
-        {
-            if (c == '\n')
-                continue;
-            if (c == '\r')
-                return true;
-            strLine += c;
-            if (strLine.size() >= 9000)
-                return true;
-        }
-        else if (nBytes <= 0)
-        {
-            boost::this_thread::interruption_point();
-            if (nBytes < 0)
-            {
-                int nErr = WSAGetLastError();
-                if (nErr == WSAEMSGSIZE)
-                    continue;
-                if (nErr == WSAEWOULDBLOCK || nErr == WSAEINTR || nErr == WSAEINPROGRESS)
-                {
-                    MilliSleep(10);
-                    continue;
-                }
-            }
-            if (!strLine.empty())
-                return true;
-            if (nBytes == 0)
-            {
-                // socket closed
-                LogPrint("net", "socket closed\n");
-                return false;
-            }
-            else
-            {
-                // socket error
-                int nErr = WSAGetLastError();
-                LogPrint("net", "recv failed: %d\n", nErr);
-                return false;
-            }
-        }
-    }
-}
-
 int GetnScore(const CService& addr)
 {
     LOCK(cs_mapLocalHost);
@@ -195,8 +145,7 @@ bool IsPeerAddrLocalGood(CNode *pnode)
 // pushes our own address to a peer
 void AdvertizeLocal(CNode *pnode)
 {
-    if (!fNoListen && pnode->fSuccessfullyConnected)
-    {
+    if (!fNoListen && pnode->fSuccessfullyConnected) {
         CAddress addrLocal = GetLocalAddress(&pnode->addr);
         // If discovery is enabled, sometimes give our peer the address it
         // tells us that it sees us as in case it has a better idea of our
@@ -213,8 +162,7 @@ void AdvertizeLocal(CNode *pnode)
     }
 }
 
-void SetReachable(enum Network net, bool fFlag)
-{
+void SetReachable(enum Network net, bool fFlag) {
     LOCK(cs_mapLocalHost);
     vfReachable[net] = fFlag;
     if (net == NET_IPV6 && fFlag)
@@ -222,8 +170,7 @@ void SetReachable(enum Network net, bool fFlag)
 }
 
 // learn a new local address
-bool AddLocal(const CService& addr, int nScore)
-{
+bool AddLocal(const CService& addr, int nScore) {
     if (!addr.IsRoutable())
         return false;
 
@@ -249,8 +196,7 @@ bool AddLocal(const CService& addr, int nScore)
     return true;
 }
 
-bool AddLocal(const CNetAddr &addr, int nScore)
-{
+bool AddLocal(const CNetAddr &addr, int nScore) {
     return AddLocal(CService(addr, GetListenPort()), nScore);
 }
 
@@ -344,8 +290,7 @@ CNode* FindNode(const CService& addr)
     return NULL;
 }
 
-CNode* ConnectNode(CAddress addrConnect, const char *pszDest)
-{
+CNode* ConnectNode(CAddress addrConnect, const char *pszDest) {
     if (pszDest == NULL) {
         if (IsLocal(addrConnect))
             return NULL;
@@ -404,6 +349,61 @@ CNode* ConnectNode(CAddress addrConnect, const char *pszDest)
 
     return NULL;
 }
+
+bool CNode::RecvMsg(CNetMessage& msg) {
+    char buf[BUF_SIZE]; // typical socket buffer is 8K-64K
+	char *buf_p = &buf[0];
+    int len = sizeof(buf);
+    int handled;
+
+    len = recv(hSocket, buf_p, len, MSG_DONTWAIT);
+	if (len < 0) {
+		int nErr = WSAGetLastError();
+		// socket error
+		boost::this_thread::interruption_point();
+		if (nErr != WSAEWOULDBLOCK && nErr != WSAEMSGSIZE && nErr != WSAEINTR && nErr != WSAEINPROGRESS) {
+			if (!fDisconnect) {
+				LogPrint("net", "recv failed: (%d)\n", nErr);
+			}
+			CloseSocketDisconnect();
+		}
+		return false;
+	} else if (len == 0) {
+		// socket closed
+		boost::this_thread::interruption_point();
+		if (!fDisconnect) {
+			LogPrint("net", "socket closed\n");
+		}
+		CloseSocketDisconnect();
+		return false;
+	}
+    while (len > 0) {
+        // absorb network data
+        if (!msg.in_data) {
+            handled = msg.readHeader(buf_p, len);
+		} else {
+			handled = msg.readData(buf_p, len);
+		}
+        if (handled < 0) {
+			LogPrint("net", "socket handled incorrectly on continuation\n");
+            CloseSocketDisconnect();
+            return false;
+        }
+
+        buf_p = buf_p+handled;
+        len -= handled;
+
+        if (msg.complete()) {
+            msg.nTime = GetTimeMicros();
+        }
+    }
+
+    nLastRecv = GetTime();
+    nRecvBytes += len;
+    RecordBytesRecv(len);
+    return true;
+}
+
 
 void CNode::CloseSocketDisconnect()
 {
@@ -522,43 +522,11 @@ void CNode::copyStats(CNodeStats &stats)
     // Raw ping time is in microseconds, but show it to user as whole seconds (Bitcoin users should be well used to small numbers with many decimal places by now :)
     stats.dPingTime = (((double)nPingUsecTime) / 1e6);
     stats.dPingWait = (((double)nPingUsecWait) / 1e6);
-    
+
     // Leave string empty if addrLocal invalid (not filled in yet)
     stats.addrLocal = addrLocal.IsValid() ? addrLocal.ToString() : "";
 }
 #undef X
-
-// requires LOCK(cs_vRecvMsg)
-bool CNode::ReceiveMsgBytes(const char *pch, unsigned int nBytes)
-{
-    while (nBytes > 0) {
-
-        // get current incomplete message, or create a new one
-        if (vRecvMsg.empty() ||
-            vRecvMsg.back().complete())
-            vRecvMsg.push_back(CNetMessage(SER_NETWORK, nRecvVersion));
-
-        CNetMessage& msg = vRecvMsg.back();
-
-        // absorb network data
-        int handled;
-        if (!msg.in_data)
-            handled = msg.readHeader(pch, nBytes);
-        else
-            handled = msg.readData(pch, nBytes);
-
-        if (handled < 0)
-                return false;
-
-        pch += handled;
-        nBytes -= handled;
-
-        if (msg.complete())
-            msg.nTime = GetTimeMicros();
-    }
-
-    return true;
-}
 
 int CNetMessage::readHeader(const char *pch, unsigned int nBytes)
 {
@@ -606,13 +574,6 @@ int CNetMessage::readData(const char *pch, unsigned int nBytes)
 
     return nCopy;
 }
-
-
-
-
-
-
-
 
 
 // requires LOCK(cs_vSend)
@@ -756,8 +717,9 @@ void ThreadSocketHandler()
             LOCK(cs_vNodes);
             BOOST_FOREACH(CNode* pnode, vNodes)
             {
-                if (pnode->hSocket == INVALID_SOCKET)
-                    continue;
+				if (pnode->hSocket == INVALID_SOCKET) {
+					continue;
+				}
                 {
                     TRY_LOCK(pnode->cs_vSend, lockSend);
                     if (lockSend) {
@@ -861,48 +823,20 @@ void ThreadSocketHandler()
             //
             // Receive
             //
-            if (pnode->hSocket == INVALID_SOCKET)
+            if (pnode->hSocket == INVALID_SOCKET) {
                 continue;
-            if (FD_ISSET(pnode->hSocket, &fdsetRecv) || FD_ISSET(pnode->hSocket, &fdsetError))
-            {
+            }
+            if (FD_ISSET(pnode->hSocket, &fdsetRecv) || FD_ISSET(pnode->hSocket, &fdsetError)) {
                 TRY_LOCK(pnode->cs_vRecvMsg, lockRecv);
-                if (lockRecv)
-                {
+                if (lockRecv) {
                     if (pnode->GetTotalRecvSize() > ReceiveFloodSize()) {
-                        if (!pnode->fDisconnect)
+                        if (!pnode->fDisconnect) {
                             LogPrintf("socket recv flood control disconnect (%u bytes)\n", pnode->GetTotalRecvSize());
+                        }
                         pnode->CloseSocketDisconnect();
-                    }
-                    else {
-                        // typical socket buffer is 8K-64K
-                        char pchBuf[0x10000];
-                        int nBytes = recv(pnode->hSocket, pchBuf, sizeof(pchBuf), MSG_DONTWAIT);
-                        if (nBytes > 0)
-                        {
-                            if (!pnode->ReceiveMsgBytes(pchBuf, nBytes))
-                                pnode->CloseSocketDisconnect();
-                            pnode->nLastRecv = GetTime();
-                            pnode->nRecvBytes += nBytes;
-                            pnode->RecordBytesRecv(nBytes);
-                        }
-                        else if (nBytes == 0)
-                        {
-                            // socket closed gracefully
-                            if (!pnode->fDisconnect)
-                                LogPrint("net", "socket closed\n");
-                            pnode->CloseSocketDisconnect();
-                        }
-                        else if (nBytes < 0)
-                        {
-                            // error
-                            int nErr = WSAGetLastError();
-                            if (nErr != WSAEWOULDBLOCK && nErr != WSAEMSGSIZE && nErr != WSAEINTR && nErr != WSAEINPROGRESS)
-                            {
-                                if (!pnode->fDisconnect)
-                                    LogPrintf("socket recv error %d\n", nErr);
-                                pnode->CloseSocketDisconnect();
-                            }
-                        }
+                    } else {
+                        CNetMessage& msg = CNetMessage(SER_NETWORK, pnode->nRecvVersion);
+                        pnode->RecvMsg(msg);
                     }
                 }
             }
@@ -915,8 +849,9 @@ void ThreadSocketHandler()
             if (FD_ISSET(pnode->hSocket, &fdsetSend))
             {
                 TRY_LOCK(pnode->cs_vSend, lockSend);
-                if (lockSend)
-                    SocketSendData(pnode);
+				if (lockSend) {
+					SocketSendData(pnode);
+				}
             }
 
             //
@@ -1766,7 +1701,7 @@ uint64_t CNode::GetTotalBytesSent()
 
 CAddrDB::CAddrDB()
 {
-    pathAddr = GetDataDir() / "peers.dat";
+    this->pathAddr = GetDataDir() / "peers.dat";
 }
 
 bool CAddrDB::Write(const CAddrMan& addr)
@@ -1801,35 +1736,37 @@ bool CAddrDB::Write(const CAddrMan& addr)
     fileout.fclose();
 
     // replace existing peers.dat, if any, with new peers.dat.XXXX
-    if (!RenameOver(pathTmp, pathAddr))
+    if (!RenameOver(pathTmp, this->pathAddr))
         return error("CAddrman::Write() : Rename-into-place failed");
 
     return true;
 }
 
-bool CAddrDB::Read(CAddrMan& addr)
-{
+bool CAddrDB::Read(CAddrMan& addr) {
     // open input file, and associate with CAutoFile
-    FILE *file = fopen(pathAddr.string().c_str(), "rb");
+    FILE *file = fopen((this->pathAddr).generic_string().c_str(), "rb");
+	if (NULL == file) {
+		return error("CAddrman::Read() : fopen failed");
+	}
     CAutoFile filein = CAutoFile(file, SER_DISK, CLIENT_VERSION);
-    if (!filein)
-        return error("CAddrman::Read() : open failed");
+	if (!filein) {
+		return error("CAddrman::Read() : open failed");
+	}
 
     // use file size to size memory buffer
-    int fileSize = boost::filesystem::file_size(pathAddr);
+    int fileSize = boost::filesystem::file_size(this->pathAddr);
     int dataSize = fileSize - sizeof(uint256);
     // Don't try to resize to a negative number if file is small
     if ( dataSize < 0 ) dataSize = 0;
-    vector<unsigned char> vchData;
-    vchData.resize(dataSize);
+    std::vector<char> vchData;
+    vchData.resize(dataSize, 0);
     uint256 hashIn;
 
     // read data and checksum from file
     try {
         filein.read((char *)&vchData[0], dataSize);
         filein >> hashIn;
-    }
-    catch (std::exception &e) {
+    } catch (std::exception &e) {
         return error("CAddrman::Read() 2 : I/O error or stream data corrupted");
     }
     filein.fclose();

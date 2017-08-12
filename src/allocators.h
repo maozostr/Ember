@@ -11,7 +11,7 @@
 #include <map>
 #include <openssl/crypto.h> // for OPENSSL_cleanse()
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifdef _WIN32_WINNT
 #undef _WIN32_WINNT
 #endif
@@ -144,9 +144,9 @@ public:
     bool Lock(const void *addr, size_t len)
     {
 #ifdef WIN32
-        return VirtualLock(const_cast<void*>(addr), len);
+        return (bool)(0 != VirtualLock(const_cast<void*>(addr), len));
 #else
-        return mlock(addr, len) == 0;
+        return (bool)mlock(addr, len) == 0;
 #endif
     }
     /** Unlock memory pages.
@@ -155,9 +155,9 @@ public:
     bool Unlock(const void *addr, size_t len)
     {
 #ifdef WIN32
-        return VirtualUnlock(const_cast<void*>(addr), len);
+        return (bool)(0 != VirtualUnlock(const_cast<void*>(addr), len));
 #else
-        return munlock(addr, len) == 0;
+        return (bool)munlock(addr, len) == 0;
 #endif
     }
 };

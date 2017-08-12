@@ -532,7 +532,7 @@ public:
         if(ret < 0){
             throw bignum_error("CBigNum::isPrime :BN_is_prime");
         }
-        return ret;
+        return (bool)(0 != ret);
     }
 
     bool isOne() const {

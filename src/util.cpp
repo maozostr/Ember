@@ -39,7 +39,7 @@ namespace boost {
 #include <openssl/rand.h>
 #include <stdarg.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
 #pragma warning(disable:4804)
@@ -104,11 +104,6 @@ public:
             ppmutexOpenSSL[i] = new CCriticalSection();
         CRYPTO_set_locking_callback(locking_callback);
 
-#ifdef WIN32
-        // Seed OpenSSL PRNG with current contents of the screen
-        RAND_screen();
-#endif
-
         // Seed OpenSSL PRNG with performance counter
         RandAddSeed();
     }
@@ -167,24 +162,24 @@ void RandAddSeedPerfmon()
 #endif
 }
 
-uint64_t GetRand(uint64_t nMax)
-{
-    if (nMax == 0)
-        return 0;
+uint64_t GetRand(uint64_t nMax) {
+	if (nMax == 0) {
+		return 0;
+	}
 
     // The range of the random source must be a multiple of the modulus
     // to give every possible output value an equal possibility
     uint64_t nRange = (std::numeric_limits<uint64_t>::max() / nMax) * nMax;
     uint64_t nRand = 0;
-    do
-        RAND_bytes((unsigned char*)&nRand, sizeof(nRand));
-    while (nRand >= nRange);
+	do {
+		RAND_bytes((unsigned char*)&nRand, sizeof(nRand));
+	} while (nRand >= nRange);
     return (nRand % nMax);
 }
 
 int GetRandInt(int nMax)
 {
-    return GetRand(nMax);
+    return (int)GetRand(nMax);
 }
 
 uint256 GetRandHash()
@@ -1071,8 +1066,8 @@ void CreatePidFile(const boost::filesystem::path &path, pid_t pid)
 bool RenameOver(boost::filesystem::path src, boost::filesystem::path dest)
 {
 #ifdef WIN32
-    return MoveFileExA(src.string().c_str(), dest.string().c_str(),
-                      MOVEFILE_REPLACE_EXISTING);
+    return (bool)(0 != (MoveFileExA(src.string().c_str(), dest.string().c_str(),
+                      MOVEFILE_REPLACE_EXISTING)));
 #else
     int rc = std::rename(src.string().c_str(), dest.string().c_str());
     return (rc == 0);

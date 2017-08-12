@@ -15,7 +15,8 @@
 #include <vector>
 
 #include <boost/filesystem/path.hpp>
-#include <db_cxx.h>
+
+#include <db.h>
 
 class CAddrMan;
 class CBlockLocator;
@@ -41,9 +42,9 @@ private:
 
 public:
     mutable CCriticalSection cs_db;
-    DbEnv dbenv;
+    DB_ENV *dbenv;
     std::map<std::string, int> mapFileUseCount;
-    std::map<std::string, Db*> mapDb;
+    std::map<std::string, DB*> mapDb;
 
     CDBEnv();
     ~CDBEnv();
@@ -76,10 +77,10 @@ public:
     void CloseDb(const std::string& strFile);
     bool RemoveDb(const std::string& strFile);
 
-    DbTxn *TxnBegin(int flags=DB_TXN_WRITE_NOSYNC)
+	DB_TXN *TxnBegin(int flags=DB_TXN_WRITE_NOSYNC)
     {
-        DbTxn* ptxn = NULL;
-        int ret = dbenv.txn_begin(NULL, &ptxn, flags);
+		DB_TXN* ptxn = NULL;
+        int ret = dbenv->txn_begin(dbenv, NULL, &ptxn, flags);
         if (!ptxn || ret != 0)
             return NULL;
         return ptxn;
@@ -93,9 +94,9 @@ extern CDBEnv bitdb;
 class CDB
 {
 protected:
-    Db* pdb;
+    DB* pdb;
     std::string strFile;
-    DbTxn *activeTxn;
+    DB_TXN *activeTxn;
     bool fReadOnly;
 
     explicit CDB(const std::string& strFilename, const char* pszMode="r+");
@@ -110,43 +111,45 @@ private:
 
 protected:
     template<typename K, typename T>
-    bool Read(const K& key, T& value)
-    {
-        if (!pdb)
+    bool Read(const K& key, T& value) {
+		DBT datKey = { 0 };
+		DBT datValue = { 0 };
+        
+		if (!pdb)
             return false;
-
         // Key
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(1000);
         ssKey << key;
-        Dbt datKey(&ssKey[0], ssKey.size());
+		datKey.data = &ssKey[0];
+		datKey.size = ssKey.size();
 
         // Read
-        Dbt datValue;
-        datValue.set_flags(DB_DBT_MALLOC);
-        int ret = pdb->get(activeTxn, &datKey, &datValue, 0);
-        memset(datKey.get_data(), 0, datKey.get_size());
-        if (datValue.get_data() == NULL)
-            return false;
+		datValue.flags |= DB_DBT_MALLOC;
+        int ret = pdb->get(pdb, activeTxn, &datKey, &datValue, 0);
+        memset(datKey.data, 0, datKey.size);
+		if (datValue.data == NULL) {
+			return false;
+		}
 
         // Unserialize value
         try {
-            CDataStream ssValue((char*)datValue.get_data(), (char*)datValue.get_data() + datValue.get_size(), SER_DISK, CLIENT_VERSION);
+            CDataStream ssValue((char*)datValue.data, (char*)datValue.data + datValue.size, SER_DISK, CLIENT_VERSION);
             ssValue >> value;
         }
         catch (std::exception &e) {
+			(void)e; // Compiler tricks: trick it to "use e" at 0 cost
             return false;
         }
 
-        // Clear and free memory
-        memset(datValue.get_data(), 0, datValue.get_size());
-        free(datValue.get_data());
         return (ret == 0);
     }
 
     template<typename K, typename T>
-    bool Write(const K& key, const T& value, bool fOverwrite=true)
-    {
+    bool Write(const K& key, const T& value, bool fOverwrite=true) {
+		DBT datKey = { 0 };
+		DBT datValue = { 0 };
+
         if (!pdb)
             return false;
         if (fReadOnly)
@@ -156,26 +159,25 @@ protected:
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(1000);
         ssKey << key;
-        Dbt datKey(&ssKey[0], ssKey.size());
+		datKey.data = &ssKey[0];
+		datKey.size = ssKey.size();
 
         // Value
         CDataStream ssValue(SER_DISK, CLIENT_VERSION);
         ssValue.reserve(10000);
         ssValue << value;
-        Dbt datValue(&ssValue[0], ssValue.size());
+		datValue.data = &ssValue[0];
+		datValue.size = ssValue.size();
 
         // Write
-        int ret = pdb->put(activeTxn, &datKey, &datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
+        int ret = pdb->put(pdb, activeTxn, &datKey, &datValue, (fOverwrite ? 0 : DB_NOOVERWRITE));
 
-        // Clear memory in case it was a private key
-        memset(datKey.get_data(), 0, datKey.get_size());
-        memset(datValue.get_data(), 0, datValue.get_size());
         return (ret == 0);
     }
 
     template<typename K>
-    bool Erase(const K& key)
-    {
+    bool Erase(const K& key) {
+		DBT datKey = { 0 };
         if (!pdb)
             return false;
         if (fReadOnly)
@@ -185,19 +187,18 @@ protected:
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(1000);
         ssKey << key;
-        Dbt datKey(&ssKey[0], ssKey.size());
+		datKey.data = &ssKey[0];
+		datKey.size = ssKey.size();
 
         // Erase
-        int ret = pdb->del(activeTxn, &datKey, 0);
+        int ret = pdb->del(pdb, activeTxn, &datKey, 0);
 
-        // Clear memory
-        memset(datKey.get_data(), 0, datKey.get_size());
         return (ret == 0 || ret == DB_NOTFOUND);
     }
 
     template<typename K>
-    bool Exists(const K& key)
-    {
+	bool Exists(const K& key) {
+		DBT datKey = { 0 };
         if (!pdb)
             return false;
 
@@ -205,63 +206,45 @@ protected:
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(1000);
         ssKey << key;
-        Dbt datKey(&ssKey[0], ssKey.size());
+		datKey.data = &ssKey[0];
+		datKey.size = ssKey.size();
 
         // Exists
-        int ret = pdb->exists(activeTxn, &datKey, 0);
+        int ret = pdb->exists(pdb, activeTxn, &datKey, 0);
 
-        // Clear memory
-        memset(datKey.get_data(), 0, datKey.get_size());
         return (ret == 0);
     }
 
-    Dbc* GetCursor()
-    {
-        if (!pdb)
-            return NULL;
-        Dbc* pcursor = NULL;
-        int ret = pdb->cursor(NULL, &pcursor, 0);
-        if (ret != 0)
-            return NULL;
-        return pcursor;
-    }
+    int ReadAtCursor(DBC *pcursor, CDataStream& ssKey, CDataStream& ssValue, unsigned int fFlags=DB_NEXT) {
+		DBT datKey = {0};
+		DBT datValue = { 0 };
 
-    int ReadAtCursor(Dbc* pcursor, CDataStream& ssKey, CDataStream& ssValue, unsigned int fFlags=DB_NEXT)
-    {
-        // Read at cursor
-        Dbt datKey;
-        if (fFlags == DB_SET || fFlags == DB_SET_RANGE || fFlags == DB_GET_BOTH || fFlags == DB_GET_BOTH_RANGE)
-        {
-            datKey.set_data(&ssKey[0]);
-            datKey.set_size(ssKey.size());
+        if (fFlags == DB_SET || fFlags == DB_SET_RANGE || fFlags == DB_GET_BOTH || fFlags == DB_GET_BOTH_RANGE) {
+			datKey.data = &ssKey[0];
+            datKey.size = ssKey.size();
         }
-        Dbt datValue;
-        if (fFlags == DB_GET_BOTH || fFlags == DB_GET_BOTH_RANGE)
-        {
-            datValue.set_data(&ssValue[0]);
-            datValue.set_size(ssValue.size());
+		
+        if (fFlags == DB_GET_BOTH || fFlags == DB_GET_BOTH_RANGE) {
+            datValue.data = &ssValue[0];
+            datValue.size = ssValue.size();
         }
-        datKey.set_flags(DB_DBT_MALLOC);
-        datValue.set_flags(DB_DBT_MALLOC);
-        int ret = pcursor->get(&datKey, &datValue, fFlags);
-        if (ret != 0)
-            return ret;
-        else if (datKey.get_data() == NULL || datValue.get_data() == NULL)
-            return 99999;
+        datKey.flags |= DB_DBT_MALLOC;
+        datValue.flags |= DB_DBT_MALLOC;
+        int ret = pcursor->get(pcursor, &datKey, &datValue, fFlags);
+		if (ret != 0) {
+			return ret;
+		} else if (datKey.data == NULL || datValue.data == NULL) {
+			return 99999;
+		}
 
         // Convert to streams
         ssKey.SetType(SER_DISK);
         ssKey.clear();
-        ssKey.write((char*)datKey.get_data(), datKey.get_size());
+        ssKey.write((char*)datKey.data, datKey.size);
         ssValue.SetType(SER_DISK);
         ssValue.clear();
-        ssValue.write((char*)datValue.get_data(), datValue.get_size());
+        ssValue.write((char*)datValue.data, datValue.size);
 
-        // Clear and free memory
-        memset(datKey.get_data(), 0, datKey.get_size());
-        memset(datValue.get_data(), 0, datValue.get_size());
-        free(datKey.get_data());
-        free(datValue.get_data());
         return 0;
     }
 
@@ -270,7 +253,7 @@ public:
     {
         if (!pdb || activeTxn)
             return false;
-        DbTxn* ptxn = bitdb.TxnBegin();
+        DB_TXN* ptxn = bitdb.TxnBegin();
         if (!ptxn)
             return false;
         activeTxn = ptxn;
@@ -281,7 +264,7 @@ public:
     {
         if (!pdb || !activeTxn)
             return false;
-        int ret = activeTxn->commit(0);
+        int ret = activeTxn->commit(activeTxn, 0);
         activeTxn = NULL;
         return (ret == 0);
     }
@@ -290,7 +273,7 @@ public:
     {
         if (!pdb || !activeTxn)
             return false;
-        int ret = activeTxn->abort();
+        int ret = activeTxn->abort(activeTxn);
         activeTxn = NULL;
         return (ret == 0);
     }

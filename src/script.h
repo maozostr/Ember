@@ -283,12 +283,9 @@ class CScript : public std::vector<unsigned char>
 protected:
     CScript& push_int64(int64_t n)
     {
-        if (n == -1 || (n >= 1 && n <= 16))
-        {
-            push_back(n + (OP_1 - 1));
-        }
-        else
-        {
+        if (n == -1 || (n >= 1 && n <= 16)) {
+            push_back((unsigned char)(n + (OP_1 - 1)));
+        } else {
             CBigNum bn(n);
             *this << bn.getvch();
         }
@@ -297,12 +294,9 @@ protected:
 
     CScript& push_uint64(uint64_t n)
     {
-        if (n >= 1 && n <= 16)
-        {
-            push_back(n + (OP_1 - 1));
-        }
-        else
-        {
+        if (n >= 1 && n <= 16) {
+            push_back((unsigned char)(n + (OP_1 - 1)));
+        } else {
             CBigNum bn(n);
             *this << bn.getvch();
         }
@@ -411,7 +405,7 @@ public:
         else if (b.size() <= 0xffff)
         {
             insert(end(), OP_PUSHDATA2);
-            unsigned short nSize = b.size();
+            unsigned short nSize = (unsigned short)b.size();
             insert(end(), (unsigned char*)&nSize, (unsigned char*)&nSize + sizeof(nSize));
         }
         else

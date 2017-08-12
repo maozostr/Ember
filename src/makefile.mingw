@@ -5,13 +5,15 @@
 USE_UPNP:=0
 USE_WALLET:=1
 
+ROOT_DIR = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
 INCLUDEPATHS= \
- -I"C:\boost-1.58.0-mgw" \
+ -I"E:\projects\Ember\dependencies\boost_1_64_0" \
  -I"C:\db-4.8.30.NC-mgw\build_unix" \
  -I"C:\openssl-1.0.1t-mgw\include"
 
 LIBPATHS= \
- -L"C:\boost-1.58.0-mgw\stage\lib" \
+ -L"E:\projects\Ember\dependencies\boost_1_64_0\stage\lib" \
  -L"C:\db-4.8.30.NC-mgw\build_unix" \
  -L"C:\openssl-1.0.1t-mgw"
 

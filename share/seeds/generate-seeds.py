@@ -99,14 +99,10 @@ def process_nodes(g, f, structname, defaultport):
         line = line.strip()
         if not line:
             continue
-        if not first:
-            g.write(',\n')
-        first = False
-
         (host,port) = parse_spec(line, defaultport)
         hoststr = ','.join(('0x%02x' % b) for b in host)
-        g.write('    {{%s}, %i}' % (hoststr, port))
-    g.write('\n};\n')
+        g.write('    {{%s}, %i},\n' % (hoststr, port))
+    g.write("    {{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}, 00000}\n};\n")
 
 def main():
     if len(sys.argv)<2:

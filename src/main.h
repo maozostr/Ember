@@ -241,7 +241,7 @@ public:
     void SetNull()
     {
         nVersion = CTransaction::CURRENT_VERSION;
-        nTime = GetAdjustedTime();
+        nTime = (unsigned int)GetAdjustedTime();
         vin.clear();
         vout.clear();
         nLockTime = 0;
@@ -306,9 +306,9 @@ public:
 
         try {
             filein >> *this;
-        }
-        catch (std::exception &e) {
-            return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
+        } catch (std::exception &e) {
+			(void)e; // Compiler trick to "use e" at no cost
+            return error("%s() : deserialize or I/O error", __func__);
         }
 
         // Return file pointer
@@ -774,7 +774,8 @@ public:
             filein >> *this;
         }
         catch (std::exception &e) {
-            return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
+			(void)e; // Compiler trick to "use e" at no cost
+            return error("%s() : deserialize or I/O error", __func__);
         }
 
         // Check the header
@@ -1023,7 +1024,7 @@ public:
 
     bool GeneratedStakeModifier() const
     {
-        return (nFlags & BLOCK_STAKE_MODIFIER);
+        return (bool)(0 != (nFlags & BLOCK_STAKE_MODIFIER));
     }
 
     void SetStakeModifier(uint64_t nModifier, bool fGeneratedStakeModifier)

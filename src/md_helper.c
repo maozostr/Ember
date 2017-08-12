@@ -75,6 +75,8 @@
  *
  * @author   Thomas Pornin <thomas.pornin@cryptolog.com>
  */
+/*
+#include <stddef.h>
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4146)
@@ -217,10 +219,8 @@ SPH_XCAT(sph_, HASH)(void *cc, const void *data, size_t len)
 	sc->count_low = clow2;
 	if (clow2 < clow)
 		sc->count_high ++;
-	/*
-	 * This code handles the improbable situation where "size_t" is
-	 * greater than 32 bits, and yet we do not have a 64-bit type.
-	 */
+	// This code handles the improbable situation where "size_t" is
+	// greater than 32 bits, and yet we do not have a 64-bit type.
 	orig_len >>= 12;
 	orig_len >>= 10;
 	orig_len >>= 10;
@@ -231,10 +231,8 @@ SPH_XCAT(sph_, HASH)(void *cc, const void *data, size_t len)
 
 #endif
 
-/*
- * Perform padding and produce result. The context is NOT reinitialized
- * by this function.
- */
+// Perform padding and produce result. The context is NOT reinitialized
+// by this function.
 static void
 SPH_XCAT(HASH, _addbits_and_close)(void *cc,
 	unsigned ub, unsigned n, void *dst, unsigned rnum)
@@ -344,3 +342,4 @@ SPH_XCAT(HASH, _close)(void *cc, void *dst, unsigned rnum)
 {
 	SPH_XCAT(HASH, _addbits_and_close)(cc, 0, 0, dst, rnum);
 }
+*/

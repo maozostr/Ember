@@ -68,6 +68,7 @@ Value getstakesubsidy(const Array& params, bool fHelp)
         ssData >> tx;
     }
     catch (std::exception &e) {
+		(void)e; // Compiler trick to "use e" at no cost
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
     }
 

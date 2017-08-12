@@ -70,37 +70,48 @@ bool AppInit(int argc, char* argv[])
 
         if (fCommandLine)
         {
-            if (!SelectParamsFromCommandLine()) {
-                fprintf(stderr, "Error: invalid combination of -regtest and -testnet.\n");
-                return false;
-            }
+			bool fRegTest = GetBoolArg("-regtest", false);
+			bool fTestNet = GetBoolArg("-testnet", false);
+
+			if (fTestNet && fRegTest) {
+				fprintf(stderr, "Error: invalid combination of -regtest and -testnet.\n");
+			}
+
+			if (fRegTest) {
+				SelectParams(CChainParams::REGTEST);
+			}
+			else if (fTestNet) {
+				SelectParams(CChainParams::TESTNET);
+			}
+			else {
+				SelectParams(CChainParams::MAIN);
+			}
+            
             int ret = CommandLineRPC(argc, argv);
             exit(ret);
         }
-#if !defined(WIN32)
+#ifndef _WIN32
         fDaemon = GetBoolArg("-daemon", false);
         if (fDaemon)
         {
-            // Daemonize
+		    // Daemonize
             pid_t pid = fork();
-            if (pid < 0)
-            {
+            if (pid < 0) {
                 fprintf(stderr, "Error: fork() returned %d errno %d\n", pid, errno);
                 return false;
             }
-            if (pid > 0) // Parent process, pid is child process id
-            {
+            if (pid > 0) { // Parent process, pid is child process id
                 CreatePidFile(GetPidFile(), pid);
                 return true;
             }
             // Child process falls through to rest of initialization
 
             pid_t sid = setsid();
-            if (sid < 0)
-                fprintf(stderr, "Error: setsid() returned %d errno %d\n", sid, errno);
+			if (sid < 0) {
+				fprintf(stderr, "Error: setsid() returned %d errno %d\n", sid, errno);
+			}
         }
 #endif
-
         fRet = AppInit2(threadGroup);
     }
     catch (std::exception& e) {

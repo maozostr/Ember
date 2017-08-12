@@ -24,7 +24,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <openssl/crypto.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <signal.h>
 #endif
 
@@ -43,6 +43,9 @@ unsigned int nDerivationMethodIndex;
 unsigned int nMinerSleep;
 bool fUseFastIndex;
 enum Checkpoints::CPMode CheckpointsMode;
+
+bool fRegTest;
+bool fTestNet;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -200,12 +203,10 @@ std::string HelpMessage()
 #endif
     strUsage += "  -paytxfee=<amt>        " + _("Fee per KB to add to transactions you send") + "\n";
     strUsage += "  -mininput=<amt>        " + _("When creating transactions, ignore inputs with value less than this (default: 0.01)") + "\n";
-    if (fHaveGUI)
-        strUsage += "  -server                " + _("Accept command line and JSON-RPC commands") + "\n";
-#if !defined(WIN32)
-    if (fHaveGUI)
-        strUsage += "  -daemon                " + _("Run in the background as a daemon and accept commands") + "\n";
-#endif
+	if (fHaveGUI) {
+		strUsage += "  -server                " + _("Accept command line and JSON-RPC commands") + "\n";
+	}
+    strUsage += "  -daemon                " + _("Run in the background as a daemon and accept commands") + "\n";
     strUsage += "  -testnet               " + _("Use the test network") + "\n";
     strUsage += "  -debug=<category>      " + _("Output debugging information (default: 0, supplying <category> is optional)") + "\n";
     strUsage +=                               _("If <category> is not supplied, output all debugging information.") + "\n";
@@ -295,7 +296,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     // Disable confusing "helpful" text message on abort, Ctrl-C
     _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 #endif
-#ifdef WIN32
+#ifdef _WIN32
     // Enable Data Execution Prevention (DEP)
     // Minimum supported OS versions: WinXP SP3, WinVista >= SP1, Win Server 2008
     // A failure is non-critical and needs no further attention!
@@ -308,7 +309,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     PSETPROCDEPPOL setProcDEPPol = (PSETPROCDEPPOL)GetProcAddress(GetModuleHandleA("Kernel32.dll"), "SetProcessDEPPolicy");
     if (setProcDEPPol != NULL) setProcDEPPol(PROCESS_DEP_ENABLE);
 #endif
-#ifndef WIN32
+#ifndef _WIN32
     umask(077);
 
     // Clean shutdown on SIGTERM
@@ -347,9 +348,25 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     nDerivationMethodIndex = 0;
 
-    if (!SelectParamsFromCommandLine()) {
-        return InitError("Invalid combination of -testnet and -regtest.");
-    }
+
+	fRegTest = GetBoolArg("-regtest", false);
+	fTestNet = GetBoolArg("-testnet", false);
+
+	if (fTestNet && fRegTest) {
+		InitError("Invalid combination of -testnet and -regtest.");
+		return false;
+	}
+
+	if (fRegTest) {
+		SelectParams(CChainParams::REGTEST);
+	} else if (fTestNet) {
+		SelectParams(CChainParams::TESTNET);		
+		mapMultiArgs["-addnode"].push_back("127.0.0.1:15724");
+		mapMultiArgs["-addnode"].push_back("127.0.0.1:15734");
+	} else {
+		SelectParams(CChainParams::MAIN);
+		mapMultiArgs["-addnode"].push_back("107.161.30.232:10024");
+	}
 
     if (mapArgs.count("-bind")) {
         // when specifying an explicit binding address, you want to listen on it
@@ -395,8 +412,6 @@ bool AppInit2(boost::thread_group& threadGroup)
             LogPrintf("AppInit2 : parameter interaction: -salvagewallet=1 -> setting -rescan=1\n");
     }
     ReadConfigFile(mapArgs, mapMultiArgs);
-    // Add static ip of our nodes.
-    mapMultiArgs["-addnode"].push_back("addnode=104.236.150.155:10024");
 
     // ********************************************************* Step 3: parameter-to-internal-flags
 
@@ -406,9 +421,6 @@ bool AppInit2(boost::thread_group& threadGroup)
     if (GetBoolArg("-nodebug", false) || find(categories.begin(), categories.end(), string("0")) != categories.end())
         fDebug = false;
 
-    // Check for -debugnet (deprecated)
-    if (GetBoolArg("-debugnet", false))
-        InitWarning(_("Warning: Deprecated argument -debugnet ignored, use -debug=net"));
     // Check for -socks - as this is a privacy risk to continue, exit here
     if (mapArgs.count("-socks"))
         return InitError(_("Error: Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, only SOCKS5 proxies are supported."));
@@ -429,7 +441,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     if (mapArgs.count("-timeout"))
     {
-        int nNewTimeout = GetArg("-timeout", 5000);
+        int nNewTimeout = GetArg("-timeout", 120000);
         if (nNewTimeout > 0 && nNewTimeout < 600000)
             nConnectTimeout = nNewTimeout;
     }
@@ -481,7 +493,7 @@ bool AppInit2(boost::thread_group& threadGroup)
         ShrinkDebugFile();
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     LogPrintf("Ember version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
-    LogPrintf("Using OpenSSL version %s\n", SSLeay_version(SSLEAY_VERSION));
+    LogPrintf("Using LibreSSL version %s\n", SSLeay_version(SSLEAY_VERSION));
     if (!fLogTimestamps)
         LogPrintf("Startup time: %s\n", DateTimeStrFormat("%x %H:%M:%S", GetTime()));
     LogPrintf("Default data directory %s\n", GetDefaultDataDir().string());
@@ -518,16 +530,15 @@ bool AppInit2(boost::thread_group& threadGroup)
             }
         }
 
-        if (GetBoolArg("-salvagewallet", false))
-        {
+        if (GetBoolArg("-salvagewallet", false)) {
             // Recover readable keypairs:
-            if (!CWalletDB::Recover(bitdb, strWalletFileName, true))
-                return false;
+			if (!CWalletDB::Recover(bitdb, strWalletFileName, true)) {
+				return false;
+			}
         }
 
-        if (filesystem::exists(GetDataDir() / strWalletFileName))
-        {
-            CDBEnv::VerifyResult r = bitdb.Verify(strWalletFileName, CWalletDB::Recover);
+        if (filesystem::exists(GetDataDir() / strWalletFileName)) {
+/*            CDBEnv::VerifyResult r = bitdb.Verify(strWalletFileName, CWalletDB::Recover);
             if (r == CDBEnv::RECOVER_OK)
             {
                 string msg = strprintf(_("Warning: wallet.dat corrupt, data salvaged!"
@@ -538,6 +549,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             }
             if (r == CDBEnv::RECOVER_FAIL)
                 return InitError(_("wallet.dat corrupt, salvage failed"));
+*/
         }
     } // (!fDisableWallet)
 #endif // ENABLE_WALLET
@@ -594,8 +606,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     fNameLookup = GetBoolArg("-dns", true);
 
     bool fBound = false;
-    if (!fNoListen)
-    {
+    if (!fNoListen) {
         std::string strError;
         if (mapArgs.count("-bind")) {
             BOOST_FOREACH(std::string strBind, mapMultiArgs["-bind"]) {
@@ -616,8 +627,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             return InitError(_("Failed to listen on any port. Use -listen=0 if you want this."));
     }
 
-    if (mapArgs.count("-externalip"))
-    {
+    if (mapArgs.count("-externalip")) {
         BOOST_FOREACH(string strAddr, mapMultiArgs["-externalip"]) {
             CService addrLocal(strAddr, GetListenPort(), fNameLookup);
             if (!addrLocal.IsValid())
@@ -627,20 +637,18 @@ bool AppInit2(boost::thread_group& threadGroup)
     }
 
 #ifdef ENABLE_WALLET
-    if (mapArgs.count("-reservebalance")) // ppcoin: reserve balance amount
-    {
-        if (!ParseMoney(mapArgs["-reservebalance"], nReserveBalance))
-        {
+    if (mapArgs.count("-reservebalance")) { // ppcoin: reserve balance amount
+        if (!ParseMoney(mapArgs["-reservebalance"], nReserveBalance)) {
             InitError(_("Invalid amount for -reservebalance=<amount>"));
             return false;
         }
     }
 #endif
 
-    if (mapArgs.count("-checkpointkey")) // ppcoin: checkpoint master priv key
-    {
-        if (!Checkpoints::SetCheckpointPrivKey(GetArg("-checkpointkey", "")))
-            InitError(_("Unable to sign checkpoint, wrong checkpointkey?\n"));
+    if (mapArgs.count("-checkpointkey")) { // ppcoin: checkpoint master priv key
+		if (!Checkpoints::SetCheckpointPrivKey(GetArg("-checkpointkey", ""))) {
+			InitError(_("Unable to sign checkpoint, wrong checkpointkey?\n"));
+		}
     }
 
     BOOST_FOREACH(string strDest, mapMultiArgs["-seednode"])
@@ -648,8 +656,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     // ********************************************************* Step 7: load blockchain
 
-    if (GetBoolArg("-loadblockindextest", false))
-    {
+    if (GetBoolArg("-loadblockindextest", false)) {
         CTxDB txdb("r");
         txdb.LoadBlockIndex();
         PrintBlockTree();
@@ -666,21 +673,18 @@ bool AppInit2(boost::thread_group& threadGroup)
     // as LoadBlockIndex can take several minutes, it's possible the user
     // requested to kill bitcoin-qt during the last operation. If so, exit.
     // As the program has not fully started yet, Shutdown() is possibly overkill.
-    if (fRequestShutdown)
-    {
+    if (fRequestShutdown) {
         LogPrintf("Shutdown requested. Exiting.\n");
         return false;
     }
     LogPrintf(" block index %15dms\n", GetTimeMillis() - nStart);
 
-    if (GetBoolArg("-printblockindex", false) || GetBoolArg("-printblocktree", false))
-    {
+    if (GetBoolArg("-printblockindex", false) || GetBoolArg("-printblocktree", false)) {
         PrintBlockTree();
         return false;
     }
 
-    if (mapArgs.count("-printblock"))
-    {
+    if (mapArgs.count("-printblock")) {
         string strMatch = mapArgs["-printblock"];
         int nFound = 0;
         for (map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.begin(); mi != mapBlockIndex.end(); ++mi)
@@ -772,10 +776,9 @@ bool AppInit2(boost::thread_group& threadGroup)
         RegisterWallet(pwalletMain);
 
         CBlockIndex *pindexRescan = pindexBest;
-        if (GetBoolArg("-rescan", false))
-            pindexRescan = pindexGenesisBlock;
-        else
-        {
+		if (GetBoolArg("-rescan", false)) {
+			pindexRescan = pindexGenesisBlock;
+		} else {
             CWalletDB walletdb(strWalletFileName);
             CBlockLocator locator;
             if (walletdb.ReadBestBlock(locator))
@@ -783,8 +786,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             else
                 pindexRescan = pindexGenesisBlock;
         }
-        if (pindexBest != pindexRescan && pindexBest && pindexRescan && pindexBest->nHeight > pindexRescan->nHeight)
-        {
+        if (pindexBest != pindexRescan && pindexBest && pindexRescan && pindexBest->nHeight > pindexRescan->nHeight) {
             uiInterface.InitMessage(_("Rescanning..."));
             LogPrintf("Rescanning last %i blocks (from block %i)...\n", pindexBest->nHeight - pindexRescan->nHeight, pindexRescan->nHeight);
             nStart = GetTimeMillis();
@@ -813,22 +815,25 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     nStart = GetTimeMillis();
 
-    {
-        CAddrDB adb;
-        if (!adb.Read(addrman))
-            LogPrintf("Invalid or missing peers.dat; recreating\n");
-    }
+	{
+		CAddrDB adb;
+		if (!adb.Read(addrman)) {
+			LogPrintf("Invalid or missing peers.dat; recreating\n");
+		}
 
-    LogPrintf("Loaded %i addresses from peers.dat  %dms\n",
-           addrman.size(), GetTimeMillis() - nStart);
+		LogPrintf("Loaded %i addresses from peers.dat  %dms\n",
+			addrman.size(), GetTimeMillis() - nStart);
+	}
 
     // ********************************************************* Step 11: start node
 
-    if (!CheckDiskSpace())
-        return false;
+	if (!CheckDiskSpace()) {
+		return false;
+	}
 
-    if (!strErrors.str().empty())
-        return InitError(strErrors.str());
+	if (!strErrors.str().empty()) {
+		return InitError(strErrors.str());
+	}
 
     RandAddSeedPerfmon();
 
@@ -846,15 +851,17 @@ bool AppInit2(boost::thread_group& threadGroup)
     // InitRPCMining is needed here so getwork/getblocktemplate in the GUI debug console works properly.
     InitRPCMining();
 #endif
-    if (fServer)
-        StartRPCThreads();
+	if (fServer) {
+		StartRPCThreads();
+	}
 
 #ifdef ENABLE_WALLET
     // Mine proof-of-stake blocks in the background
-    if (!GetBoolArg("-staking", true))
-        LogPrintf("Staking disabled\n");
-    else if (pwalletMain)
-        threadGroup.create_thread(boost::bind(&ThreadStakeMiner, pwalletMain));
+	if (!GetBoolArg("-staking", true)) {
+		LogPrintf("Staking disabled\n");
+	} else if (pwalletMain) {
+		threadGroup.create_thread(boost::bind(&ThreadStakeMiner, pwalletMain));
+	}
 #endif
 
     // ********************************************************* Step 12: finished

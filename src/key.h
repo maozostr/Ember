@@ -113,7 +113,7 @@ public:
         s.write((char*)vch, len);
     }
     template<typename Stream> void Unserialize(Stream &s, int nType, int nVersion) {
-        unsigned int len = ::ReadCompactSize(s);
+        unsigned int len = (unsigned int)::ReadCompactSize(s);
         if (len <= 65) {
             s.read((char*)vch, len);
         } else {

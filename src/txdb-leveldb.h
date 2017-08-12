@@ -92,6 +92,7 @@ protected:
             ssValue >> value;
         }
         catch (std::exception &e) {
+			(void)e; // Compiler tricks: trick it to "use e" at 0 cost
             return false;
         }
         return true;

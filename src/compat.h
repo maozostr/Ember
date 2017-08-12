@@ -5,7 +5,7 @@
 #ifndef _BITCOIN_COMPAT_H
 #define _BITCOIN_COMPAT_H 1
 
-#ifdef WIN32
+#ifdef _WIN32
 #define _WIN32_WINNT 0x0501
 #define WIN32_LEAN_AND_MEAN 1
 #ifndef NOMINMAX
@@ -29,7 +29,7 @@ typedef u_int SOCKET;
 #endif
 
 
-#ifdef WIN32
+#ifdef _WIN32
 #define MSG_NOSIGNAL        0
 #define MSG_DONTWAIT        0
 typedef int socklen_t;
@@ -52,7 +52,7 @@ inline int myclosesocket(SOCKET& hSocket)
 {
     if (hSocket == INVALID_SOCKET)
         return WSAENOTSOCK;
-#ifdef WIN32
+#ifdef _WIN32
     int ret = closesocket(hSocket);
 #else
     int ret = close(hSocket);

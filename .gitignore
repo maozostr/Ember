@@ -1,8 +1,3 @@
-src/*.exe
-src/Ember
-src/Emberd
-src/test_Ember
-src/build.h
 .*.swp
 *.*~*
 *.bak
@@ -13,7 +8,6 @@ src/build.h
 .Ember
 #compilation and Qt preprocessor part
 *.qm
-Makefile
 Ember-qt
 #resources cpp
 qrc_*.cpp
@@ -21,6 +15,3 @@ qrc_*.cpp
 *.pro.user
 #mac specific
 .DS_Store
-build
-
-!src/leveldb/Makefile

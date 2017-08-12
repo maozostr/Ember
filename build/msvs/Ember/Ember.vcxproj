@@ -1,0 +1,351 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\addrman.cpp" />
+    <ClCompile Include="..\..\..\src\aes_helper.c" />
+    <ClCompile Include="..\..\..\src\alert.cpp" />
+    <ClCompile Include="..\..\..\src\bitcoind.cpp" />
+    <ClCompile Include="..\..\..\src\blake.c" />
+    <ClCompile Include="..\..\..\src\bmw.c" />
+    <ClCompile Include="..\..\..\src\chainparams.cpp" />
+    <ClCompile Include="..\..\..\src\checkpoints.cpp" />
+    <ClCompile Include="..\..\..\src\core.cpp" />
+    <ClCompile Include="..\..\..\src\crypter.cpp" />
+    <ClCompile Include="..\..\..\src\cubehash.c" />
+    <ClCompile Include="..\..\..\src\db.cpp" />
+    <ClCompile Include="..\..\..\src\echo.c" />
+    <ClCompile Include="..\..\..\src\fugue.c" />
+    <ClCompile Include="..\..\..\src\groestl.c" />
+    <ClCompile Include="..\..\..\src\hamsi.c" />
+    <ClCompile Include="..\..\..\src\hamsi_helper.c" />
+    <ClCompile Include="..\..\..\src\hash.cpp" />
+    <ClCompile Include="..\..\..\src\init.cpp" />
+    <ClCompile Include="..\..\..\src\jh.c" />
+    <ClCompile Include="..\..\..\src\keccak.c" />
+    <ClCompile Include="..\..\..\src\kernel.cpp" />
+    <ClCompile Include="..\..\..\src\key.cpp" />
+    <ClCompile Include="..\..\..\src\keystore.cpp" />
+    <ClCompile Include="..\..\..\src\luffa.c" />
+    <ClCompile Include="..\..\..\src\main.cpp" />
+    <ClCompile Include="..\..\..\src\md_helper.c" />
+    <ClCompile Include="..\..\..\src\miner.cpp" />
+    <ClCompile Include="..\..\..\src\net.cpp" />
+    <ClCompile Include="..\..\..\src\netbase.cpp" />
+    <ClCompile Include="..\..\..\src\noui.cpp" />
+    <ClCompile Include="..\..\..\src\pbkdf2.cpp" />
+    <ClCompile Include="..\..\..\src\protocol.cpp" />
+    <ClCompile Include="..\..\..\src\rpcblockchain.cpp" />
+    <ClCompile Include="..\..\..\src\rpcclient.cpp" />
+    <ClCompile Include="..\..\..\src\rpcdump.cpp" />
+    <ClCompile Include="..\..\..\src\rpcmining.cpp" />
+    <ClCompile Include="..\..\..\src\rpcmisc.cpp" />
+    <ClCompile Include="..\..\..\src\rpcnet.cpp" />
+    <ClCompile Include="..\..\..\src\rpcprotocol.cpp" />
+    <ClCompile Include="..\..\..\src\rpcrawtransaction.cpp" />
+    <ClCompile Include="..\..\..\src\rpcserver.cpp" />
+    <ClCompile Include="..\..\..\src\rpcwallet.cpp" />
+    <ClCompile Include="..\..\..\src\script.cpp" />
+    <ClCompile Include="..\..\..\src\scrypt.cpp" />
+    <ClCompile Include="..\..\..\src\shavite.c" />
+    <ClCompile Include="..\..\..\src\simd.c" />
+    <ClCompile Include="..\..\..\src\skein.c" />
+    <ClCompile Include="..\..\..\src\sync.cpp" />
+    <ClCompile Include="..\..\..\src\timedata.cpp" />
+    <ClCompile Include="..\..\..\src\txdb-leveldb.cpp" />
+    <ClCompile Include="..\..\..\src\txmempool.cpp" />
+    <ClCompile Include="..\..\..\src\util.cpp" />
+    <ClCompile Include="..\..\..\src\version.cpp" />
+    <ClCompile Include="..\..\..\src\wallet.cpp" />
+    <ClCompile Include="..\..\..\src\walletdb.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\addrman.h" />
+    <ClInclude Include="..\..\..\src\alert.h" />
+    <ClInclude Include="..\..\..\src\allocators.h" />
+    <ClInclude Include="..\..\..\src\arith_uint256.h" />
+    <ClInclude Include="..\..\..\src\base58.h" />
+    <ClInclude Include="..\..\..\src\bignum.h" />
+    <ClInclude Include="..\..\..\src\chainparams.h" />
+    <ClInclude Include="..\..\..\src\chainparamsseeds.h" />
+    <ClInclude Include="..\..\..\src\checkpoints.h" />
+    <ClInclude Include="..\..\..\src\clientversion.h" />
+    <ClInclude Include="..\..\..\src\coincontrol.h" />
+    <ClInclude Include="..\..\..\src\compat.h" />
+    <ClInclude Include="..\..\..\src\core.h" />
+    <ClInclude Include="..\..\..\src\crypter.h" />
+    <ClInclude Include="..\..\..\src\db.h" />
+    <ClInclude Include="..\..\..\src\hash.h" />
+    <ClInclude Include="..\..\..\src\hashblock.h" />
+    <ClInclude Include="..\..\..\src\init.h" />
+    <ClInclude Include="..\..\..\src\kernel.h" />
+    <ClInclude Include="..\..\..\src\key.h" />
+    <ClInclude Include="..\..\..\src\keystore.h" />
+    <ClInclude Include="..\..\..\src\main.h" />
+    <ClInclude Include="..\..\..\src\miner.h" />
+    <ClInclude Include="..\..\..\src\mruset.h" />
+    <ClInclude Include="..\..\..\src\net.h" />
+    <ClInclude Include="..\..\..\src\netbase.h" />
+    <ClInclude Include="..\..\..\src\pbkdf2.h" />
+    <ClInclude Include="..\..\..\src\protocol.h" />
+    <ClInclude Include="..\..\..\src\rpcclient.h" />
+    <ClInclude Include="..\..\..\src\rpcprotocol.h" />
+    <ClInclude Include="..\..\..\src\rpcserver.h" />
+    <ClInclude Include="..\..\..\src\script.h" />
+    <ClInclude Include="..\..\..\src\scrypt.h" />
+    <ClInclude Include="..\..\..\src\serialize.h" />
+    <ClInclude Include="..\..\..\src\sph_blake.h" />
+    <ClInclude Include="..\..\..\src\sph_bmw.h" />
+    <ClInclude Include="..\..\..\src\sph_cubehash.h" />
+    <ClInclude Include="..\..\..\src\sph_echo.h" />
+    <ClInclude Include="..\..\..\src\sph_fugue.h" />
+    <ClInclude Include="..\..\..\src\sph_groestl.h" />
+    <ClInclude Include="..\..\..\src\sph_hamsi.h" />
+    <ClInclude Include="..\..\..\src\sph_jh.h" />
+    <ClInclude Include="..\..\..\src\sph_keccak.h" />
+    <ClInclude Include="..\..\..\src\sph_luffa.h" />
+    <ClInclude Include="..\..\..\src\sph_shavite.h" />
+    <ClInclude Include="..\..\..\src\sph_simd.h" />
+    <ClInclude Include="..\..\..\src\sph_skein.h" />
+    <ClInclude Include="..\..\..\src\sph_types.h" />
+    <ClInclude Include="..\..\..\src\sync.h" />
+    <ClInclude Include="..\..\..\src\timedata.h" />
+    <ClInclude Include="..\..\..\src\tinyformat.h" />
+    <ClInclude Include="..\..\..\src\txdb-leveldb.h" />
+    <ClInclude Include="..\..\..\src\txdb.h" />
+    <ClInclude Include="..\..\..\src\txmempool.h" />
+    <ClInclude Include="..\..\..\src\uint256.h" />
+    <ClInclude Include="..\..\..\src\ui_interface.h" />
+    <ClInclude Include="..\..\..\src\util.h" />
+    <ClInclude Include="..\..\..\src\version.h" />
+    <ClInclude Include="..\..\..\src\wallet.h" />
+    <ClInclude Include="..\..\..\src\walletdb.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\makefile.bsd" />
+    <None Include="..\..\..\src\makefile.linux-mingw" />
+    <None Include="..\..\..\src\makefile.mingw" />
+    <None Include="..\..\..\src\makefile.osx" />
+    <None Include="..\..\..\src\makefile.unix" />
+    <None Include="..\..\..\src\scrypt-arm.S" />
+    <None Include="..\..\..\src\scrypt-x86.S" />
+    <None Include="..\..\..\src\scrypt-x86_64.S" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{914E1177-0A9C-46CE-9E30-5C3E3779DC9F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>ConsoleApplication1</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+    <TargetName>emberd</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+    <TargetName>emberd</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level1</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>ENABLE_WALLET=1;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\projects\Ember\dependencies\leveldb-windows\include;E:\projects\Ember\dependencies\db-5.3.28.NC\build_windows;E:\projects\Ember\dependencies\libressl-2.5.5\include;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include\QtGui;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include\QtCore;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include\QtWidgets;E:\projects\Ember\dependencies\boost_1_64_0;%(AdditionalIncludeDirectories);E:\projects\Ember\src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\lib\$(Configuration)\$(Platform);$(ProjectDir)..\..\..\lib\$(Configuration)\boost;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libssl-43.lib;libtls-15.lib;libcrypto-41.lib;libdb_small53.lib;leveldb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libssl-43.dll" "$(TargetDir)libssl-43.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libtls-15.dll" "$(TargetDir)libtls-15.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libcrypto-41.dll" "$(TargetDir)libcrypto-41.dll"
+
+
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level1</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>ENABLE_WALLET=1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\projects\Ember\dependencies\leveldb-windows\include;E:\projects\Ember\dependencies\db-5.3.28.NC\build_windows;E:\projects\Ember\dependencies\libressl-2.5.5\include;E:\projects\Ember\dependencies\boost_1_64_0;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\QtWidgets;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\QtCore;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\QtGui;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\*;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include;%(AdditionalIncludeDirectories);E:\projects\Ember\src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\lib\$(Configuration)\$(Platform);$(ProjectDir)..\..\..\lib\$(Configuration)\boost;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libssl-43.lib;libtls-15.lib;libcrypto-41.lib;libdb_small53.lib;leveldb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libssl-43.dll" "$(TargetDir)libssl-43.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libtls-15.dll" "$(TargetDir)libtls-15.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libcrypto-41.dll" "$(TargetDir)libcrypto-41.dll"
+
+
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>ENABLE_WALLET=1;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\projects\Ember\dependencies\leveldb-windows\include;E:\projects\Ember\dependencies\db-5.3.28.NC\build_windows;E:\projects\Ember\dependencies\libressl-2.5.5\include;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include\QtGui;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include\QtCore;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include\QtWidgets;E:\projects\Ember\dependencies\boost_1_64_0;E:\Qt\Qt5.7.0\5.7\winrt_x86_msvc2015\include\*;%(AdditionalIncludeDirectories);E:\projects\Ember\src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\lib\$(Configuration)\$(Platform);$(ProjectDir)..\..\..\lib\$(Configuration)\boost;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libssl-43.lib;libtls-15.lib;libcrypto-41.lib;libdb_small53.lib;leveldb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libssl-43.dll" "$(TargetDir)libssl-43.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libtls-15.dll" "$(TargetDir)libtls-15.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libcrypto-41.dll" "$(TargetDir)libcrypto-41.dll"
+
+
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>ENABLE_WALLET=1;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\projects\Ember\dependencies\leveldb-windows\include;E:\projects\Ember\dependencies\db-5.3.28.NC\build_windows;E:\projects\Ember\dependencies\libressl-2.5.5\include;E:\projects\Ember\dependencies\boost_1_64_0;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\QtWidgets;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\QtCore;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\QtGui;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include\QtWidgets;E:\Qt\Qt5.7.0\5.7\winrt_x64_msvc2015\include;%(AdditionalIncludeDirectories);E:\projects\Ember\src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\lib\$(Configuration)\$(Platform);$(ProjectDir)..\..\..\lib\$(Configuration)\boost;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libssl-43.lib;libtls-15.lib;libcrypto-41.lib;libdb_small53.lib;leveldb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libssl-43.dll" "$(TargetDir)libssl-43.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libtls-15.dll" "$(TargetDir)libtls-15.dll"
+copy /Y "$(SolutionDir)..\..\dll\$(Platform)\libcrypto-41.dll" "$(TargetDir)libcrypto-41.dll"
+
+
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
